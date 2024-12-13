@@ -1,0 +1,52 @@
+sql_queries_modified = """
+1. How many leases were there in December 2023?
+SELECT COUNT(*) AS total_leases
+FROM leases
+WHERE EXTRACT(MONTH FROM created_at) = 12 AND EXTRACT(YEAR FROM created_at) = 2023;
+
+2. How many of those were made by customers living in Finland?
+SELECT COUNT(*) AS leases_in_finland
+FROM leases l
+JOIN addresses a ON l.customers_id = a.customers_id
+WHERE EXTRACT(MONTH FROM l.created_at) = 12 AND EXTRACT(YEAR FROM l.created_at) = 2023
+  AND a.country = 'Finland';
+
+3. How many of those were made by customers living in Rovaniemi?
+SELECT COUNT(*) AS leases_in_rovaniemi
+FROM leases l
+JOIN addresses a ON l.customers_id = a.customers_id
+WHERE EXTRACT(MONTH FROM l.created_at) = 12 AND EXTRACT(YEAR FROM l.created_at) = 2023
+  AND a.city = 'Rovaniemi';
+
+4. Count all leases by cities in Finland
+SELECT a.city, COUNT(*) AS total_leases
+FROM leases l
+JOIN addresses a ON l.customers_id = a.customers_id
+WHERE a.country = 'Finland'
+GROUP BY a.city
+ORDER BY total_leases DESC;
+
+5. What is the most popular car make by number of leases?
+SELECT c.make, COUNT(*) AS lease_count
+FROM leases l
+JOIN cars c ON l.cars_id = c.id
+GROUP BY c.make
+ORDER BY lease_count DESC
+LIMIT 1;
+
+6. Count the average salary of all employees
+SELECT AVG(salary) AS avg_salary
+FROM employees;
+
+7. List employees by the number of handled leases (the employee in charge of the most leases on the top)
+SELECT e.id, CONCAT(e.first_name, ' ', e.last_name) AS employee_name, COUNT(l.id) AS total_leases_handled
+FROM employees e
+LEFT JOIN leases l ON e.id = l.employees_id
+GROUP BY e.id
+ORDER BY total_leases_handled DESC;
+
+8. What is the average number of days people rent cars for
+SELECT AVG(DATEDIFF(l.ends_at, l.begins_at)) AS avg_rental_days
+FROM leases l;
+"""
+

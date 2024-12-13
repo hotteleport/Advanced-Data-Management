@@ -1,0 +1,96 @@
+
+-- 1. Fetch all the employees (all columns)
+SELECT * FROM employees;
+
+-- 2. Fetch the employee whose id is 10 (all columns)
+SELECT * FROM employees WHERE id = 10;
+
+-- 3. Fetch only the employee with id 20. Get only first_name and salary columns
+SELECT first_name, salary FROM employees WHERE id = 20;
+
+-- 4. Fetch all the employees whose last_name is kuru and salary is more than 5000 (all columns)
+SELECT * FROM employees WHERE last_name = 'kuru' AND salary > 5000;
+
+-- 5. Use INNER JOIN to join departments table with users table using department_id. Show employee’s id, first_name, last_name and department name
+SELECT e.id, e.first_name, e.last_name, d.department_name 
+FROM employees e 
+INNER JOIN departments d ON e.department_id = d.id;
+
+-- 6. Show those employees who belong to sales or software engineering department. Show employee’s first and last name and department name
+SELECT e.first_name, e.last_name, d.department_name 
+FROM employees e 
+INNER JOIN departments d ON e.department_id = d.id
+WHERE d.department_name IN ('Sales', 'Software Engineering');
+
+-- 7. Count the age of employees. Show first_name, last_name and age from each employee.
+SELECT first_name, last_name, YEAR(CURDATE()) - YEAR(birth_date) AS age 
+FROM employees;
+
+-- 8. Fetch the lowest salary of all employees. Show only the lowest salary (no other columns needed in this exercise).
+SELECT MIN(salary) AS lowest_salary FROM employees;
+
+-- 9. Find the employee having the highest salary. Show all columns from the employee.
+SELECT * FROM employees WHERE salary = (SELECT MAX(salary) FROM employees);
+
+-- 10. Fetch the highest salary in human resources or software development department. You must use INNER JOIN. Show department name and salary columns in the result.
+SELECT d.department_name, MAX(e.salary) AS highest_salary 
+FROM employees e 
+INNER JOIN departments d ON e.department_id = d.id
+WHERE d.department_name IN ('Human Resources', 'Software Development')
+GROUP BY d.department_name;
+
+-- 11. Fetch the lowest salary in salaries department. Show department name and lowest salary columns in the result.
+SELECT d.department_name, MIN(e.salary) AS lowest_salary 
+FROM employees e 
+INNER JOIN departments d ON e.department_id = d.id
+WHERE d.department_name = 'Salaries'
+GROUP BY d.department_name;
+
+-- 12. Fetch average salaries by department. Show department name and department's average salary in the result set.
+SELECT d.department_name, AVG(e.salary) AS average_salary 
+FROM employees e 
+INNER JOIN departments d ON e.department_id = d.id
+GROUP BY d.department_name;
+
+-- 13. Add a new department named RnD-department
+INSERT INTO departments (department_name) VALUES ('RnD-department');
+
+-- 14. Fetch only the department(s) with zero employees. This can be done using LEFT JOIN and filter using IS keyword. The result set should contain only the name of the department (one column)
+SELECT d.department_name 
+FROM departments d 
+LEFT JOIN employees e ON d.id = e.department_id
+WHERE e.id IS NULL;
+
+-- 15. Fetch all the departments and their average salaries whose average salary is more than 4200. Result set contains name of the department, average salary
+SELECT d.department_name, AVG(e.salary) AS average_salary 
+FROM employees e 
+INNER JOIN departments d ON e.department_id = d.id
+GROUP BY d.department_name
+HAVING AVG(e.salary) > 4200;
+
+-- 16. Fetch the number of employees by department. Result set should contain name of the department, number of employees
+SELECT d.department_name, COUNT(e.id) AS number_of_employees 
+FROM employees e 
+INNER JOIN departments d ON e.department_id = d.id
+GROUP BY d.department_name;
+
+-- 17. Fetch all the employees whose salary is less than the average salary. Result set contains: full_name and salary columns. Full_name is a concatenation of first_name and last_name separated by white space. You must use column alias full_name
+SELECT CONCAT(first_name, ' ', last_name) AS full_name, salary 
+FROM employees 
+WHERE salary < (SELECT AVG(salary) FROM employees);
+
+-- 18. Fetch all the employees whose salary is less than the average salary of the department they work in. You should use subquery in this exercise. Result set should contain all the columns in the employees table.
+SELECT * FROM employees e1 
+WHERE e1.salary < (SELECT AVG(e2.salary) 
+                   FROM employees e2 
+                   WHERE e2.department_id = e1.department_id);
+
+-- 19. Fetch every employees salary and the average salary of the whole company. Result set: salary, avg_salary (two columns). You must use column alias avg_salary.
+SELECT salary, (SELECT AVG(salary) FROM employees) AS avg_salary 
+FROM employees;
+
+-- 20. Fetch every employees salary and the lowest salary of the department they work in. Result set: salary, lowest_salary_of_dep (two columns). You must use column alias lowest_salary_of_dep.
+SELECT salary, (SELECT MIN(e2.salary) 
+                FROM employees e2 
+                WHERE e2.department_id = e1.department_id) AS lowest_salary_of_dep 
+FROM employees e1;

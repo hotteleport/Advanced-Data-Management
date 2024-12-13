@@ -1,0 +1,64 @@
+
+1. How many leases were there in December 2023?
+SELECT COUNT(*)
+FROM fact_leases
+WHERE EXTRACT(MONTH FROM begins_at) = 12 AND EXTRACT(YEAR FROM begins_at) = 2023;
+
+2. How many of those were made by customers living in Finland?
+SELECT COUNT(*)
+FROM fact_leases fl
+JOIN dim_customers dc ON dc.customer_id = fl.customer_id
+JOIN dim_addresses da ON da.address_id = dc.address_id
+JOIN dim_zip_codes dz ON dz.zip_code_id = da.zip_code_id
+JOIN dim_cities dci ON dci.city_id = dz.city_id
+JOIN dim_countries dco ON dco.country_id = dci.country_id
+WHERE dco.country_name = 'Finland'
+AND EXTRACT(MONTH FROM fl.begins_at) = 12 AND EXTRACT(YEAR FROM fl.begins_at) = 2023;
+
+3. How many of those were made by customers living in Rovaniemi?
+SELECT COUNT(*)
+FROM fact_leases fl
+JOIN dim_customers dc ON dc.customer_id = fl.customer_id
+JOIN dim_addresses da ON da.address_id = dc.address_id
+JOIN dim_zip_codes dz ON dz.zip_code_id = da.zip_code_id
+JOIN dim_cities dci ON dci.city_id = dz.city_id
+WHERE dci.city_name = 'Rovaniemi'
+AND EXTRACT(MONTH FROM fl.begins_at) = 12 AND EXTRACT(YEAR FROM fl.begins_at) = 2023;
+
+4. Count all leases by cities in Finland.
+SELECT dci.city_name, COUNT(fl.lease_id)
+FROM fact_leases fl
+JOIN dim_customers dc ON dc.customer_id = fl.customer_id
+JOIN dim_addresses da ON da.address_id = dc.address_id
+JOIN dim_zip_codes dz ON dz.zip_code_id = da.zip_code_id
+JOIN dim_cities dci ON dci.city_id = dz.city_id
+JOIN dim_countries dco ON dco.country_id = dci.country_id
+WHERE dco.country_name = 'Finland'
+GROUP BY dci.city_name
+ORDER BY COUNT(fl.lease_id) DESC;
+
+5. What is the most popular car make by number of leases?
+SELECT dm.make_name, COUNT(fl.lease_id) AS lease_count
+FROM fact_leases fl
+JOIN dim_cars dc ON dc.car_id = fl.car_id
+JOIN dim_models dmo ON dmo.model_id = dc.model_id
+JOIN dim_makes dm ON dm.make_id = dmo.make_id
+GROUP BY dm.make_name
+ORDER BY lease_count DESC
+LIMIT 1;
+
+6. Count the average salary of all employees.
+SELECT AVG(salary) AS average_salary
+FROM dim_employees;
+
+7. List employees by the number of handled leases (the employee in charge of the most leases on the top).
+SELECT de.employee_id, CONCAT(de.first_name, ' ', de.last_name) AS employee_name, 
+       COUNT(fl.lease_id) AS leases_handled
+FROM dim_employees de
+LEFT JOIN fact_leases fl ON fl.employee_id = de.employee_id
+GROUP BY de.employee_id
+ORDER BY leases_handled DESC;
+
+8. What is the average number of days people rent cars for?
+SELECT AVG(DATEDIFF(fl.ends_at, fl.begins_at)) AS average_rental_days
+FROM fact_leases fl;
